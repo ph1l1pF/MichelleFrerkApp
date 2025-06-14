@@ -1,6 +1,10 @@
 # michelle_frerk
 
-A new Flutter project.
+An App for the artist Michelle Frerk, which shows her artworks and allows to buy them.
+
+It uses the Shopify Storefront API to fetch the products and the checkout process.
+
+https://michellefrerk.com
 
 ## Increase version number
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:michelle_frerk/repositories/media_item_repository.dart';
 import 'package:michelle_frerk/models/media_item.dart';
 import 'package:michelle_frerk/views/videoslide.dart';
+import 'package:provider/provider.dart';
 
 class MediaViewer extends StatelessWidget {
   final MediaItem mediaItem;
@@ -15,6 +16,8 @@ class MediaViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaItemRepository = Provider.of<MediaItemRepository>(context, listen: false);
+
     if (mediaItem.origin != 'network') {
       if (mediaItem.type == 'image' && mediaItem.origin == 'assets') {
         return Image.asset(
@@ -32,7 +35,7 @@ class MediaViewer extends StatelessWidget {
 
     // Handle network media items using FutureBuilder
     return FutureBuilder<File?>(
-      future: MediaItemRepository.get(mediaItem),
+      future: mediaItemRepository.get(mediaItem),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Show a loading indicator while waiting for the future to complete

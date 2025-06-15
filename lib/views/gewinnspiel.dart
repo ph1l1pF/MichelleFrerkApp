@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:michelle_frerk/services/firestore-service.dart';
 import 'package:michelle_frerk/views/media_viewer.dart';
 import 'package:michelle_frerk/models/media_item.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GewinnspielPage extends StatefulWidget {
@@ -21,12 +22,15 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
   bool _notificationsEnabled = false;
 
   final prefKey = 'hasParticipated17655478753';
+  late FirestoreService _firestoreService;
 
   @override
   void initState() {
     super.initState();
     _checkParticipation();
     _checkNotificationPermissions();
+    _firestoreService = Provider.of<FirestoreService>(context, listen: false);
+
   }
 
   Future<void> _checkParticipation() async {
@@ -49,7 +53,7 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
     await prefs.setBool(prefKey, true);
 
     try {
-      await FirestoreService().store(
+      await _firestoreService.store(
         _nameController.value.text.trim(),
         _emailController.value.text.trim(),
       );
@@ -76,8 +80,6 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
       );
     } catch (e) {
       await prefs.setBool(prefKey, false);
-
-      print(e);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

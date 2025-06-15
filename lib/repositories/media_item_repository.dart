@@ -6,15 +6,15 @@ import 'package:michelle_frerk/models/media_item.dart';
 import 'package:path_provider/path_provider.dart';
 
 class MediaItemRepository {
-  static final Map<String, File> _cache = {};
+  final Map<String, File> _cache = {};
 
-  static loadAll(List<MediaItem> mediaItems) async {
+  Future<void> loadAll(List<MediaItem> mediaItems) async {
     for (var mediaItem in mediaItems) {
       _load(mediaItem);
     }
   }
 
-  static Future<File?> get(MediaItem mediaItem) async {
+  Future<File?> get(MediaItem mediaItem) async {
     var cached = _cache[mediaItem.locator];
     if (cached != null) {
       return cached;
@@ -24,7 +24,7 @@ class MediaItemRepository {
     }
   }
 
-  static _load(MediaItem mediaItem) async {
+  Future<void> _load(MediaItem mediaItem) async {
     final file = await _downloadFile(mediaItem);
     if (file != null) {
       _cache[mediaItem.locator] = file;
@@ -34,7 +34,7 @@ class MediaItemRepository {
     }
   }
 
-  static Future<File?> _downloadFile(MediaItem mediaItem) async {
+  Future<File?> _downloadFile(MediaItem mediaItem) async {
     var fileName = _getRandFileName();
     // the video player need a file extension, otherwise it complains about wrong format
     if(mediaItem.type == 'image') {
@@ -54,20 +54,10 @@ class MediaItemRepository {
     }
     final file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
-    
-    // file.length().then((length) {
-    //   var lengthMB = length / 1000000.0;
-    //   var type = mediaItem.type;
-    //   if(lengthMB > 1 && type == 'image') {
-    //     var x = mediaItem.locator;
-    //     print('large image file detected: $x');
-    //   }
-    //   print('File size: $lengthMB MB ($type)');
-    // });
     return file;
   }
 
-  static String _getRandFileName() {
+  String _getRandFileName() {
     final random = Random();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final randomNumber = random.nextInt(100000);

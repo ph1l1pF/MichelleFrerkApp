@@ -3,6 +3,7 @@ import 'package:michelle_frerk/repositories/media_item_repository.dart';
 import 'package:michelle_frerk/views/fullscreen_carousel.dart';
 import 'package:michelle_frerk/views/media_viewer.dart';
 import 'package:michelle_frerk/models/media_item.dart';
+import 'package:provider/provider.dart';
 
 class ImageCarousel extends StatefulWidget {
   final List<MediaItem> mediaItems;
@@ -28,8 +29,10 @@ class ImageCarouselState extends State<ImageCarousel> {
     _currentPage = widget.initialPage;
     _controller = PageController(initialPage: widget.initialPage);
 
+    final mediaItemRepository = Provider.of<MediaItemRepository>(context, listen: false);
+
   Future.microtask(() async {
-    await MediaItemRepository.loadAll(
+    await mediaItemRepository.loadAll(
       widget.mediaItems.where((mediaItem) => mediaItem.origin == 'network').toList(),
     );
   });    

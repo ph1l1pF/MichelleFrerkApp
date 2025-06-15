@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:michelle_frerk/repositories/media_item_repository.dart';
+import 'package:michelle_frerk/services/firestore-service.dart';
 import 'package:michelle_frerk/views/carousel.dart';
 import 'package:michelle_frerk/repositories/collections-map.dart';
 import 'package:michelle_frerk/environment.dart';
@@ -10,6 +12,7 @@ import 'package:michelle_frerk/views/gewinnspiel.dart';
 import 'package:michelle_frerk/models/media_item.dart';
 import 'package:michelle_frerk/views/product-details.dart';
 import 'package:michelle_frerk/views/produktliste.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +24,16 @@ void main() async {
   var topic = await Environment.firebaseMessagingTopic();
   FirebaseMessaging.instance.subscribeToTopic(topic);
 
-  runApp(const MyApp());
+  runApp(
+  MultiProvider(
+    providers: [
+      Provider(create: (context) => MediaItemRepository()),
+      Provider(create: (context) => FirestoreService()),
+      Provider(create: (context) => ProductShopifyService()),
+    ],
+    child: const MyApp(),
+  ),
+);
 }
 
 // when the app was terminated before the notification was tapped, we need to handle the initial message
@@ -67,6 +79,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   int _selectedIndex = 0;
 
   late Future<List<Product>> _produkteFuture;
@@ -81,7 +94,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _produkteFuture = new ProductShopifyService().fetchProducts();
+    final productShopifyService = Provider.of<ProductShopifyService>(context, listen: false);
+    _produkteFuture = productShopifyService.fetchProducts();
     _produkteFuture.then((produkte) async {
       setState(() {
         grosseWerkeList =

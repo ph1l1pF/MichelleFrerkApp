@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:michelle_frerk/repositories/media_item_repository.dart';
 import 'package:michelle_frerk/models/media_item.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoSlide extends StatefulWidget {
@@ -15,14 +16,18 @@ class VideoSlide extends StatefulWidget {
 class _VideoSlideState extends State<VideoSlide> {
   late VideoPlayerController _controller = VideoPlayerController.asset('');
 
+  late MediaItemRepository _mediaItemRepository;
+
   @override
   void initState() {
     super.initState();
     _downloadAndPlayVideo();
+    _mediaItemRepository = Provider.of<MediaItemRepository>(context, listen: false);
+    
   }
 
   Future<void> _downloadAndPlayVideo() async {
-    final file = await MediaItemRepository.get(widget.mediaItem);
+    final file = await _mediaItemRepository.get(widget.mediaItem);
     if (file == null) {
       return;
     }

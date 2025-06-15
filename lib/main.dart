@@ -25,48 +25,49 @@ void main() async {
   FirebaseMessaging.instance.subscribeToTopic(topic);
 
   runApp(
-  MultiProvider(
-    providers: [
-      Provider(create: (context) => MediaItemRepository()),
-      Provider(create: (context) => FirestoreService()),
-      Provider(create: (context) => ProductShopifyService()),
-    ],
-    child: const MyApp(),
-  ),
-);
+    MultiProvider(
+      providers: [
+        Provider(create: (context) => MediaItemRepository()),
+        Provider(create: (context) => FirestoreService()),
+        Provider(create: (context) => ProductShopifyService()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-// when the app was terminated before the notification was tapped, we need to handle the initial message
-Future<void> handleInitialMessage(List<Product> produkte) async {
-  RemoteMessage? initialMessage =
-      await FirebaseMessaging.instance.getInitialMessage();
-  if (initialMessage == null) {
-    return;
+bool _showProductDetailPageIfProductFound(
+  RemoteMessage? message,
+  List<Product> products,
+) {
+  var id = message?.data['id'];
+
+  if (id == null || id?.toString().trim() == "") {
+    return true;
   }
 
-  var id = initialMessage.data['id'];
+  var productsFittingId = products.where((p) => p.id == id);
+  var product = productsFittingId.isNotEmpty ? productsFittingId.first : null;
 
-  if (id == null || id == "") {
-    return;
-  }
-
-  Product? produkt = produkte.firstWhere(
-    (p) => p.id == id,
-    orElse: () => null!,
-  );
-
-  // Here we don't need another fetch if the product was not found, 
-  // because here the products were fetched a moment ago
-  
-  if (produkt == null) {
-    return;
+  if (product == null) {
+    return false;
   }
 
   navigatorKey.currentState?.push(
     MaterialPageRoute(
-      builder: (context) => ProduktDetailPage(product: produkt),
+      builder: (context) => ProduktDetailPage(product: product),
     ),
   );
+  return true;
+}
+
+// when the app was terminated before the notification was tapped, we need to handle the initial message
+Future<void> handleInitialMessage(List<Product> products) async {
+  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+
+  _showProductDetailPageIfProductFound(initialMessage, products);
+  // Here we don't need another fetch if the product was not found,
+  // because here the products were fetched a moment ago
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -79,10 +80,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   int _selectedIndex = 0;
 
-  late Future<List<Product>> _produkteFuture;
+  late Future<List<Product>> _productsFuture;
 
   List<Product> grosseWerkeList = [];
   List<Product> minisList = [];
@@ -94,99 +94,74 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    final productShopifyService = Provider.of<ProductShopifyService>(context, listen: false);
-    _produkteFuture = productShopifyService.fetchProducts();
-    _produkteFuture.then((produkte) async {
+    final productShopifyService = Provider.of<ProductShopifyService>(
+      context,
+      listen: false,
+    );
+    _productsFuture = productShopifyService.fetchProducts();
+    _productsFuture.then((products) async {
       setState(() {
         grosseWerkeList =
-            produkte
+            products
                 .where(
                   (produkt) =>
                       produkt.collection.id == collectionMap[grosseWerke],
                 )
                 .toList();
         minisList =
-            produkte
+            products
                 .where(
-                  (produkt) =>
-                      produkt.collection.id == collectionMap[MINI],
+                  (produkt) => produkt.collection.id == collectionMap[MINI],
                 )
                 .toList();
         journalsList =
-            produkte
+            products
                 .where(
-                  (produkt) =>
-                      produkt.collection.id == collectionMap[Journals],
+                  (produkt) => produkt.collection.id == collectionMap[Journals],
                 )
                 .toList();
         auftragarbeitenList =
-            produkte
+            products
                 .where(
                   (produkt) =>
-                      produkt.collection.id ==
-                      collectionMap[Auftragarbeiten],
+                      produkt.collection.id == collectionMap[Auftragarbeiten],
                 )
                 .toList();
         gutscheineList =
-            produkte
+            products
                 .where(
                   (produkt) =>
                       produkt.collection.id == collectionMap[Gutscheine],
                 )
                 .toList();
         artInteriorPiecesList =
-            produkte
+            products
                 .where(
                   (produkt) =>
-                      produkt.collection.id ==
-                      collectionMap[ArtInteriorPieces],
+                      produkt.collection.id == collectionMap[ArtInteriorPieces],
                 )
                 .toList();
       });
 
-      await handleInitialMessage(produkte);
+      await handleInitialMessage(products);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-      _produkteFuture.then((produkte) async {
-        var id = message.data['id'];
-
-        if(id == null || id == "") {
-          return;
-        }
-
-        var produkt = produkte.firstWhere(
-          (p) => p.id == id,
-          orElse: () => null!,
+      _productsFuture.then((products) async {
+        final productFound = _showProductDetailPageIfProductFound(
+          message,
+          products,
         );
 
-        if (produkt != null) {
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (context) => ProduktDetailPage(product: produkt),
-            ),
-          );
+        if (productFound) {
           return;
         }
 
-        // It can be the case that produkte does not contain the new product
+        // It can be the case that products does not contain the new product
         // as the last fetch was before the new product was published in Shopify store
         // Therefore we fetch again and then search again.
-        var produkteNew = await ProductShopifyService().fetchProducts();
-
-        produkt = produkteNew.firstWhere(
-          (p) => p.id == id,
-          orElse: () => null!,
-        );
-
-        if (produkt == null) {
-          return;
-        }
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (context) => ProduktDetailPage(product: produkt),
-          ),
-        );
+        var productsNew = await productShopifyService.fetchProducts();
+        _showProductDetailPageIfProductFound(message, productsNew);
       });
     });
   }
@@ -194,7 +169,7 @@ class _MyAppState extends State<MyApp> {
   // Screens for each tab
   Widget _buildProductsPage() {
     return FutureBuilder<List<Product>>(
-      future: _produkteFuture,
+      future: _productsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

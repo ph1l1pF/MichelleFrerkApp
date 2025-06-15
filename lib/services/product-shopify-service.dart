@@ -116,7 +116,7 @@ class ProductShopifyService {
         .toList();
   }
 
-  Future<List<Product>> fetchProducts() async {
+  Future<dynamic> _fetchCollections() async {
     final Uri url = Uri.https(
       Environment.shopifyDomain,
       '/api/2025-04/graphql.json',
@@ -132,15 +132,18 @@ class ProductShopifyService {
     );
 
     if (response.statusCode != 200) {
-      print('Fehler beim Laden der Produkte: ${response.body}');
       return [];
     }
     final data = jsonDecode(response.body);
-    final collections = data['data']['collections']['edges'] as List;
+    return data['data']['collections']['edges'] as List;
+  }
+
+  Future<List<Product>> fetchProducts() async {
+    final collections = await _fetchCollections();
 
     List<Product?> availableProductsWithCategories = [];
-
     for (var collection in collections) {
+      
       final collectionObject = Collection(
         collection['node']['id'],
         collection['node']['title'],

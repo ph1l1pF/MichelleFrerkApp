@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/get-products.dart';
-import 'package:michelle_frerk/media_viewer.dart';
+import 'package:michelle_frerk/views/media_viewer.dart';
+import 'package:michelle_frerk/models/media_item.dart';
 
 class FullScreenCarousel extends StatelessWidget {
   final List<MediaItem> mediaItems;

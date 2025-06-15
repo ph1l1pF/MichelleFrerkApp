@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/cache.dart';
-import 'package:michelle_frerk/fullscreen_carousel.dart';
-import 'package:michelle_frerk/get-products.dart';
-import 'package:michelle_frerk/media_viewer.dart';
+import 'package:michelle_frerk/repositories/media_item_repository.dart';
+import 'package:michelle_frerk/views/fullscreen_carousel.dart';
+import 'package:michelle_frerk/views/media_viewer.dart';
+import 'package:michelle_frerk/models/media_item.dart';
 
 class ImageCarousel extends StatefulWidget {
   final List<MediaItem> mediaItems;
@@ -29,7 +29,7 @@ class ImageCarouselState extends State<ImageCarousel> {
     _controller = PageController(initialPage: widget.initialPage);
 
   Future.microtask(() async {
-    await MediaCache.loadAll(
+    await MediaItemRepository.loadAll(
       widget.mediaItems.where((mediaItem) => mediaItem.origin == 'network').toList(),
     );
   });    

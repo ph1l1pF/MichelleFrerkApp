@@ -1,9 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/environment.dart';
-import 'package:michelle_frerk/get-products.dart';
-import 'package:michelle_frerk/media_viewer.dart';
+import 'package:michelle_frerk/services/firestore-service.dart';
+import 'package:michelle_frerk/views/media_viewer.dart';
+import 'package:michelle_frerk/models/media_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GewinnspielPage extends StatefulWidget {
@@ -50,15 +49,10 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
     await prefs.setBool(prefKey, true);
 
     try {
-      final firestore = FirebaseFirestore.instance;
-
-      String collection = await Environment.firebaseStoreCollection();
-
-      await firestore.collection(collection).add({
-        'name': _nameController.value.text,
-        'email': _emailController.value.text,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+      await FirestoreService().store(
+        _nameController.value.text.trim(),
+        _emailController.value.text.trim(),
+      );
 
       setState(() {
         _hasParticipated = true;

@@ -1,14 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/cache.dart';
-import 'package:michelle_frerk/carousel.dart';
-import 'package:michelle_frerk/collections-map.dart';
+import 'package:michelle_frerk/views/carousel.dart';
+import 'package:michelle_frerk/repositories/collections-map.dart';
 import 'package:michelle_frerk/environment.dart';
-import 'package:michelle_frerk/get-products.dart';
-import 'package:michelle_frerk/gewinnspiel.dart';
-import 'package:michelle_frerk/product-details.dart';
-import 'package:michelle_frerk/produktliste.dart';
+import 'package:michelle_frerk/models/product.dart';
+import 'package:michelle_frerk/services/product-shopify-service.dart';
+import 'package:michelle_frerk/views/gewinnspiel.dart';
+import 'package:michelle_frerk/models/media_item.dart';
+import 'package:michelle_frerk/views/product-details.dart';
+import 'package:michelle_frerk/views/produktliste.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,7 @@ void main() async {
 }
 
 // when the app was terminated before the notification was tapped, we need to handle the initial message
-Future<void> handleInitialMessage(List<Map<String, dynamic>> produkte) async {
+Future<void> handleInitialMessage(List<Product> produkte) async {
   RemoteMessage? initialMessage =
       await FirebaseMessaging.instance.getInitialMessage();
   if (initialMessage == null) {
@@ -37,21 +38,21 @@ Future<void> handleInitialMessage(List<Map<String, dynamic>> produkte) async {
     return;
   }
 
-  var produkt = produkte.firstWhere(
-    (p) => p['id'] == id,
-    orElse: () => {'id': null},
+  Product? produkt = produkte.firstWhere(
+    (p) => p.id == id,
+    orElse: () => null!,
   );
 
   // Here we don't need another fetch if the product was not found, 
   // because here the products were fetched a moment ago
   
-  if (produkt['id'] == null) {
+  if (produkt == null) {
     return;
   }
 
   navigatorKey.currentState?.push(
     MaterialPageRoute(
-      builder: (context) => ProduktDetailPage(produkt: produkt),
+      builder: (context) => ProduktDetailPage(product: produkt),
     ),
   );
 }
@@ -68,47 +69,47 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
 
-  late Future<List<Map<String, dynamic>>> _produkteFuture;
+  late Future<List<Product>> _produkteFuture;
 
-  List<Map<String, dynamic>> grosseWerkeList = [];
-  List<Map<String, dynamic>> minisList = [];
-  List<Map<String, dynamic>> journalsList = [];
-  List<Map<String, dynamic>> auftragarbeitenList = [];
-  List<Map<String, dynamic>> gutscheineList = [];
-  List<Map<String, dynamic>> artInteriorPiecesList = [];
+  List<Product> grosseWerkeList = [];
+  List<Product> minisList = [];
+  List<Product> journalsList = [];
+  List<Product> auftragarbeitenList = [];
+  List<Product> gutscheineList = [];
+  List<Product> artInteriorPiecesList = [];
 
   @override
   void initState() {
     super.initState();
-    _produkteFuture = fetchShopifyProducts();
+    _produkteFuture = new ProductShopifyService().fetchProducts();
     _produkteFuture.then((produkte) async {
       setState(() {
         grosseWerkeList =
             produkte
                 .where(
                   (produkt) =>
-                      produkt['collection']['id'] == collectionMap[grosseWerke],
+                      produkt.collection.id == collectionMap[grosseWerke],
                 )
                 .toList();
         minisList =
             produkte
                 .where(
                   (produkt) =>
-                      produkt['collection']['id'] == collectionMap[MINI],
+                      produkt.collection.id == collectionMap[MINI],
                 )
                 .toList();
         journalsList =
             produkte
                 .where(
                   (produkt) =>
-                      produkt['collection']['id'] == collectionMap[Journals],
+                      produkt.collection.id == collectionMap[Journals],
                 )
                 .toList();
         auftragarbeitenList =
             produkte
                 .where(
                   (produkt) =>
-                      produkt['collection']['id'] ==
+                      produkt.collection.id ==
                       collectionMap[Auftragarbeiten],
                 )
                 .toList();
@@ -116,14 +117,14 @@ class _MyAppState extends State<MyApp> {
             produkte
                 .where(
                   (produkt) =>
-                      produkt['collection']['id'] == collectionMap[Gutscheine],
+                      produkt.collection.id == collectionMap[Gutscheine],
                 )
                 .toList();
         artInteriorPiecesList =
             produkte
                 .where(
                   (produkt) =>
-                      produkt['collection']['id'] ==
+                      produkt.collection.id ==
                       collectionMap[ArtInteriorPieces],
                 )
                 .toList();
@@ -141,14 +142,14 @@ class _MyAppState extends State<MyApp> {
         }
 
         var produkt = produkte.firstWhere(
-          (p) => p['id'] == id,
-          orElse: () => {'id': null},
+          (p) => p.id == id,
+          orElse: () => null!,
         );
 
-        if (produkt['id'] != null) {
+        if (produkt != null) {
           navigatorKey.currentState?.push(
             MaterialPageRoute(
-              builder: (context) => ProduktDetailPage(produkt: produkt),
+              builder: (context) => ProduktDetailPage(product: produkt),
             ),
           );
           return;
@@ -157,19 +158,19 @@ class _MyAppState extends State<MyApp> {
         // It can be the case that produkte does not contain the new product
         // as the last fetch was before the new product was published in Shopify store
         // Therefore we fetch again and then search again.
-        var produkteNew = await fetchShopifyProducts();
+        var produkteNew = await ProductShopifyService().fetchProducts();
 
         produkt = produkteNew.firstWhere(
-          (p) => p['id'] == id,
-          orElse: () => {id: null},
+          (p) => p.id == id,
+          orElse: () => null!,
         );
 
-        if (produkt['id'] == null) {
+        if (produkt == null) {
           return;
         }
         navigatorKey.currentState?.push(
           MaterialPageRoute(
-            builder: (context) => ProduktDetailPage(produkt: produkt),
+            builder: (context) => ProduktDetailPage(product: produkt),
           ),
         );
       });
@@ -178,7 +179,7 @@ class _MyAppState extends State<MyApp> {
 
   // Screens for each tab
   Widget _buildProductsPage() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
+    return FutureBuilder<List<Product>>(
       future: _produkteFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

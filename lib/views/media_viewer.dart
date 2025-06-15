@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/cache.dart';
-import 'package:michelle_frerk/get-products.dart';
-import 'package:michelle_frerk/videoslide.dart';
+import 'package:michelle_frerk/repositories/media_item_repository.dart';
+import 'package:michelle_frerk/models/media_item.dart';
+import 'package:michelle_frerk/views/videoslide.dart';
 
 class MediaViewer extends StatelessWidget {
   final MediaItem mediaItem;
@@ -32,7 +32,7 @@ class MediaViewer extends StatelessWidget {
 
     // Handle network media items using FutureBuilder
     return FutureBuilder<File?>(
-      future: MediaCache.get(mediaItem),
+      future: MediaItemRepository.get(mediaItem),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Show a loading indicator while waiting for the future to complete

@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:intl/intl.dart';
-import 'package:michelle_frerk/carousel.dart';
+import 'package:michelle_frerk/views/carousel.dart';
 import 'package:michelle_frerk/environment.dart';
+import 'package:michelle_frerk/models/product.dart';
+import 'package:michelle_frerk/models/product_variant.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProduktDetailPage extends StatefulWidget {
-  final Map<String, dynamic> produkt;
+  final Product product;
 
-  const ProduktDetailPage({super.key, required this.produkt});
+  const ProduktDetailPage({super.key, required this.product});
 
   @override
   State<ProduktDetailPage> createState() => _ProduktDetailPageState();
 }
 
 class _ProduktDetailPageState extends State<ProduktDetailPage> {
-  late List<Map<String, dynamic>> _variants;
-  Map<String, dynamic>? _selectedVariant;
+  late List<ProductVariant> _variants;
+  ProductVariant? _selectedVariant;
   final GlobalKey<ImageCarouselState> _carouselKey =
       GlobalKey<ImageCarouselState>();
 
   @override
   void initState() {
     super.initState();
-    _variants = widget.produkt['variants'];
+    _variants = widget.product.variants;
 
     _selectedVariant =
         _variants.isNotEmpty
-            ? _variants.firstWhere((v) => v['availableForSale'] == true)
+            ? _variants.firstWhere((v) => v.availableForSale == true)
             : null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showImageForSelectedVariant(_selectedVariant);
@@ -37,23 +39,22 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.produkt['title'] ?? 'Produkt')),
+      appBar: AppBar(title: Text(widget.product.title)),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.produkt['mediaItems'] != null)
                 ImageCarousel(
                   key: _carouselKey,
-                  mediaItems: widget.produkt['mediaItems'],
+                  mediaItems: widget.product.mediaItems,
                 ),
               const SizedBox(height: 16),
               if (_variants.length > 1)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: DropdownButton<Map<String, dynamic>>(
+                  child: DropdownButton<ProductVariant>(
                     value: _selectedVariant,
                     onChanged:
                         (newValue) => setState(() {
@@ -62,7 +63,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                         }),
                     items:
                         _variants.map((variant) {
-                          final title = variant['title'];
+                          final title = variant.title;
                           return DropdownMenuItem(
                             value: variant,
                             child: SizedBox(
@@ -73,11 +74,11 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                                 textScaleFactor: 0.8,
                                 style: TextStyle(
                                   decoration:
-                                      variant['availableForSale'] == true
+                                      variant.availableForSale
                                           ? null
                                           : TextDecoration.lineThrough,
                                   color:
-                                      variant['availableForSale'] == true
+                                      variant.availableForSale
                                           ? Colors.black
                                           : Colors.grey,
                                 ),
@@ -90,17 +91,17 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
               ElevatedButton(
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(
-                    _selectedVariant?['availableForSale'] == true
+                    _selectedVariant?.availableForSale == true
                         ? Colors.black
                         : Colors.grey,
                   ),
                 ),
                 onPressed:
-                    _selectedVariant?['availableForSale'] != true
+                    _selectedVariant?.availableForSale != true
                         ? null
                         : () {
                           final variantId = extractVariantId(
-                            _selectedVariant?['id'] ?? '',
+                            _selectedVariant?.id ?? '',
                           );
                           var baseUri = Uri.https(Environment.shopifyDomain);
                           final url = '$baseUri/cart/$variantId:1';
@@ -113,7 +114,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                widget.produkt['title'] ?? '',
+                widget.product.title,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -121,7 +122,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                formatPrice(_selectedVariant?['price']),
+                formatPrice(_selectedVariant?.price ?? 0),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -129,7 +130,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
               ),
               const SizedBox(height: 12),
               Html(
-                data: widget.produkt['descriptionHtml'] ?? '',
+                data: widget.product.descriptionHtml,
                 style: {
                   "body": Style(
                     fontSize: FontSize.medium,
@@ -144,10 +145,10 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
     );
   }
 
-  void showImageForSelectedVariant(Map<String, dynamic>? newValue) {
-    final selectedImageUrl = newValue?['image'];
+  void showImageForSelectedVariant(ProductVariant? newValue) {
+    final selectedImageUrl = newValue?.imageUrl;
 
-    final index = widget.produkt['mediaItems'].indexWhere(
+    final index = widget.product.mediaItems.indexWhere(
       (item) => item.locator == selectedImageUrl,
     );
 
@@ -171,13 +172,12 @@ Future<void> launchCheckoutUrl(String url) async {
   }
 }
 
-String formatPrice(String amount) {
-  final number = double.tryParse(amount) ?? 0;
+String formatPrice(double amount) {
   final format = NumberFormat.currency(
     locale: 'de_DE',
     symbol: '€',
     decimalDigits: 2,
   );
 
-  return format.format(number);
+  return format.format(amount);
 }

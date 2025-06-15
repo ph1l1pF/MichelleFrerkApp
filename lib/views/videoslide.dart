@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/cache.dart';
-import 'package:michelle_frerk/get-products.dart';
+import 'package:michelle_frerk/repositories/media_item_repository.dart';
+import 'package:michelle_frerk/models/media_item.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoSlide extends StatefulWidget {
@@ -22,7 +22,7 @@ class _VideoSlideState extends State<VideoSlide> {
   }
 
   Future<void> _downloadAndPlayVideo() async {
-    final file = await MediaCache.get(widget.mediaItem);
+    final file = await MediaItemRepository.get(widget.mediaItem);
     if (file == null) {
       return;
     }

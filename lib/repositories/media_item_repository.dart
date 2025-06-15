@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:http/http.dart' as http;
-import 'package:michelle_frerk/get-products.dart';
+import 'package:michelle_frerk/models/media_item.dart';
 import 'package:path_provider/path_provider.dart';
 
-class MediaCache {
+class MediaItemRepository {
   static final Map<String, File> _cache = {};
 
   static loadAll(List<MediaItem> mediaItems) async {

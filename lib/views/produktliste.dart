@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/product-details.dart';
+import 'package:michelle_frerk/models/product.dart';
+import 'package:michelle_frerk/views/product-details.dart';
 
 class ProduktListe extends StatefulWidget {
-  final List<Map<String, dynamic>> produkte;
+  final List<Product> produkte;
   const ProduktListe({super.key, required this.produkte});
 
   @override
@@ -19,7 +20,7 @@ class _ProduktListeState extends State<ProduktListe> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
+    return FutureBuilder<List<Product>>(
       future: Future.value(widget.produkte),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,26 +42,24 @@ class _ProduktListeState extends State<ProduktListe> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
                 leading:
-                    produkt['mediaItems'][0] != null
-                        ? CachedNetworkImage(
-                            imageUrl: produkt['mediaItems'][0].locator,
-                            key: ValueKey(produkt['mediaItems'][0].locator),
+                    CachedNetworkImage(
+                            imageUrl: produkt.mediaItems[0].locator,
+                            key: ValueKey(produkt.mediaItems[0].locator),
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
-                        )
-                        : const Icon(Icons.image_not_supported),
-                title: Text(produkt['title']),
+                        ),
+                title: Text(produkt.title),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProduktDetailPage(produkt: produkt),
+                      builder: (context) => ProduktDetailPage(product: produkt),
                     ),
                   );
                 },
                 subtitle: Text(
-                  produkt['shortDescription'] ?? '',
+                  produkt.shortDescription,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

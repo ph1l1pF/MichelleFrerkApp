@@ -9,8 +9,12 @@ class Product {
   final bool hasAvailableVariant;
   final Collection collection;
   final String shortDescription;
-  final List<ProductVariant> variants;
+  List<ProductVariant> variants = [];
   final List<MediaItem> mediaItems;
 
-  Product(this.id, this.title, this.descriptionHtml, this.hasAvailableVariant, this.collection, this.shortDescription, this.variants, this.mediaItems);
+  Product(this.id, this.title, this.descriptionHtml, this.hasAvailableVariant, this.collection, this.shortDescription, this.mediaItems);
+  
+  setVariants(List<ProductVariant> variants) {
+    this.variants = variants;
+  }
 }

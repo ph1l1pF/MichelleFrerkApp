@@ -1,13 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:michelle_frerk/repositories/cart_repository.dart';
 import 'package:michelle_frerk/repositories/media_item_repository.dart';
-import 'package:michelle_frerk/services/firestore-service.dart';
+import 'package:michelle_frerk/services/checkout_service.dart';
+import 'package:michelle_frerk/services/firestore_service.dart';
 import 'package:michelle_frerk/views/carousel.dart';
 import 'package:michelle_frerk/repositories/collections-map.dart';
 import 'package:michelle_frerk/environment.dart';
 import 'package:michelle_frerk/models/product.dart';
-import 'package:michelle_frerk/services/product-shopify-service.dart';
+import 'package:michelle_frerk/services/product_shopify_service.dart';
+import 'package:michelle_frerk/views/cart_view.dart';
 import 'package:michelle_frerk/views/gewinnspiel.dart';
 import 'package:michelle_frerk/models/media_item.dart';
 import 'package:michelle_frerk/views/product-details.dart';
@@ -30,6 +33,8 @@ void main() async {
         Provider(create: (context) => MediaItemRepository()),
         Provider(create: (context) => FirestoreService()),
         Provider(create: (context) => ProductShopifyService()),
+        Provider(create: (context) => CheckoutService()),
+        ChangeNotifierProvider(create: (context) => CartRepository(checkoutService: CheckoutService())), // How to use the CartShopifyService
       ],
       child: const MyApp(),
     ),
@@ -98,6 +103,7 @@ class _MyAppState extends State<MyApp> {
       context,
       listen: false,
     );
+
     _productsFuture = productShopifyService.fetchProducts();
     _productsFuture.then((products) async {
       setState(() {
@@ -142,7 +148,6 @@ class _MyAppState extends State<MyApp> {
                 )
                 .toList();
       });
-
       await handleInitialMessage(products);
     });
 
@@ -166,6 +171,15 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final cartRepository = Provider.of<CartRepository>(context, listen: true);
+    _productsFuture.then((products) async {
+      await cartRepository.loadCart(products);
+    });
+  }
+
   // Screens for each tab
   Widget _buildProductsPage() {
     return FutureBuilder<List<Product>>(
@@ -182,6 +196,50 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Consumer<CartRepository>(
+                builder: (context, cartRepository, child){
+                  return IconButton(
+                    onPressed: () {
+                      navigatorKey.currentState?.push(
+                        MaterialPageRoute(
+                          builder: (context) => const CartView(),
+                        ),
+                      );
+                    },
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.shopping_cart, size: 28),
+                        if (cartRepository.count > 0)
+                          Positioned(
+                            right: -10,
+                            top: -8,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Color.fromRGBO(250, 181, 228, 0.85),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 15,
+                                minHeight: 15,
+                              ),
+                              child: Text(
+                                cartRepository.count.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
               if (grosseWerkeList.isNotEmpty) ...[
                 const Padding(
                   padding: EdgeInsets.all(8.0),

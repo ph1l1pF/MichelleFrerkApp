@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:intl/intl.dart';
+import 'package:michelle_frerk/repositories/cart_repository.dart';
+import 'package:michelle_frerk/services/checkout_service.dart';
+import 'package:michelle_frerk/utils/price_utils.dart';
 import 'package:michelle_frerk/views/carousel.dart';
-import 'package:michelle_frerk/environment.dart';
 import 'package:michelle_frerk/models/product.dart';
 import 'package:michelle_frerk/models/product_variant.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 class ProduktDetailPage extends StatefulWidget {
   final Product product;
@@ -18,6 +19,8 @@ class ProduktDetailPage extends StatefulWidget {
 
 class _ProduktDetailPageState extends State<ProduktDetailPage> {
   late List<ProductVariant> _variants;
+  late CheckoutService _checkoutService;
+  late CartRepository _cartRepository;
   ProductVariant? _selectedVariant;
   final GlobalKey<ImageCarouselState> _carouselKey =
       GlobalKey<ImageCarouselState>();
@@ -25,6 +28,10 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
   @override
   void initState() {
     super.initState();
+
+    _checkoutService = Provider.of<CheckoutService>(context, listen: false);
+    _cartRepository = Provider.of<CartRepository>(context, listen: false);
+
     _variants = widget.product.variants;
 
     _selectedVariant =
@@ -99,17 +106,46 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                 onPressed:
                     _selectedVariant?.availableForSale != true
                         ? null
-                        : () {
-                          final variantId = extractVariantId(
-                            _selectedVariant?.id ?? '',
-                          );
-                          var baseUri = Uri.https(Environment.shopifyDomain);
-                          final url = '$baseUri/cart/$variantId:1';
-                          launchCheckoutUrl(url);
+                        : () async {
+                        
+                          await _checkoutService.launchCheckoutForSingleVariant(_selectedVariant!);
                         },
                 child: const Text(
                   style: TextStyle(color: Colors.white),
-                  'Kaufen',
+                  'Sofort kaufen',
+                ),
+              ),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    _selectedVariant?.availableForSale == true && _cartRepository.canAdd(_selectedVariant!)
+                        ? Colors.black
+                        : Colors.grey,
+                  ),
+                ),
+                onPressed:
+                    _selectedVariant?.availableForSale != true || !_cartRepository.canAdd(_selectedVariant!)
+                        ? () {print('bla');}
+                        : () async {
+                      
+                          final addResult = await _cartRepository.addToCart(_selectedVariant!);
+                          if (addResult.success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Produkt zum Warenkorb hinzugefügt!'),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Fehler beim Hinzufügen zum Warenkorb: ${addResult.message}'),
+                              ),
+                            );
+                          }
+                        },
+                child: const Text(
+                  style: TextStyle(color: Colors.white),
+                  'Zum Warenkorb hinzufügen',
                 ),
               ),
               const SizedBox(height: 12),
@@ -122,7 +158,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                formatPrice(_selectedVariant?.price ?? 0),
+                _selectedVariant?.price != null ? formatPrice(_selectedVariant!.price) : '',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -158,26 +194,4 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
   }
 }
 
-String extractVariantId(String gid) {
-  final parts = gid.split('/');
-  return parts.isNotEmpty ? parts.last : gid;
-}
 
-Future<void> launchCheckoutUrl(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.platformDefault);
-  } else {
-    throw 'Could not launch $url';
-  }
-}
-
-String formatPrice(double amount) {
-  final format = NumberFormat.currency(
-    locale: 'de_DE',
-    symbol: '€',
-    decimalDigits: 2,
-  );
-
-  return format.format(amount);
-}

@@ -33,6 +33,7 @@ class ProductShopifyService {
                     id
                     title
                     availableForSale
+                    quantityAvailable
                     price {
                       amount
                       currencyCode
@@ -73,7 +74,7 @@ class ProductShopifyService {
 }
 ''';
 
-  List<ProductVariant> _getVariants(List<dynamic> variantJsons) {
+  List<ProductVariant> _getVariants(Product product, List<dynamic> variantJsons) {
     return variantJsons.map((v) {
       final variantNode = v['node'];
       return ProductVariant(
@@ -83,6 +84,8 @@ class ProductShopifyService {
         double.parse(variantNode['price']['amount']),
         variantNode['price']['currencyCode'],
         variantNode['image']?['url'],
+        variantNode['quantityAvailable'] ?? 0,
+        product
       );
     }).toList();
   }
@@ -167,16 +170,17 @@ class ProductShopifyService {
           return null;
         }
 
-        return Product(
+        final product = Product(
           node['id'],
           node['title'],
           node['descriptionHtml'],
           hasAvailableVariant,
           collectionObject,
           node['metafield'] != null ? node['metafield']['value'] : '',
-          _getVariants(variants),
           _getMediaItems(node),
         );
+        product.setVariants(_getVariants(product, variants));
+        return product;
       }).cast<Product?>();
 
       availableProductsWithCategories.addAll(productObjects);

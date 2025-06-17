@@ -1,6 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:michelle_frerk/services/firestore-service.dart';
+import 'package:michelle_frerk/services/firestore_service.dart';
 import 'package:michelle_frerk/views/media_viewer.dart';
 import 'package:michelle_frerk/models/media_item.dart';
 import 'package:provider/provider.dart';

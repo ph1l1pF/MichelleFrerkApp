@@ -20,11 +20,13 @@ class MediaViewer extends StatelessWidget {
 
     if (mediaItem.origin != 'network') {
       if (mediaItem.type == 'image' && mediaItem.origin == 'assets') {
-        return Image.asset(
-          mediaItem.locator,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.broken_image, size: 80),
+        return InteractiveViewer(
+          child: Image.asset(
+            mediaItem.locator,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.broken_image, size: 80),
+          ),
         );
       } else if (mediaItem.type == 'video') {
         return VideoSlide(mediaItem: mediaItem);
@@ -46,11 +48,13 @@ class MediaViewer extends StatelessWidget {
         } else if (snapshot.hasData && snapshot.data != null) {
           // Display the image if the file is available
           if (mediaItem.type == 'image') {
-            return Image.file(
-              snapshot.data!,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.broken_image, size: 80),
+            return InteractiveViewer(
+              child: Image.file(
+                snapshot.data!,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 80),
+              ),
             );
           } 
           else if (mediaItem.type == 'video') {

@@ -51,7 +51,7 @@ class _CartViewState extends State<CartView> {
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.black),
                               tooltip: 'Entfernen',
-                              onPressed: () async {
+                              onPressed: () {
                                 setState(() {
                                   cartRepository.remove(variant);
                                 });

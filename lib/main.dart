@@ -201,49 +201,57 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Consumer<CartRepository>(
-                builder: (context, cartRepository, child){
-                  return IconButton(
-                    onPressed: () {
-                      navigatorKey.currentState?.push(
-                        MaterialPageRoute(
-                          builder: (context) => const CartView(),
-                        ),
-                      );
-                    },
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(Icons.shopping_cart, size: 28),
-                        if (cartRepository.count > 0)
-                          Positioned(
-                            right: -10,
-                            top: -8,
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(250, 181, 228, 0.85),
-                                borderRadius: BorderRadius.circular(10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0), // Abstand nach rechts
+                    child: Consumer<CartRepository>(
+                      builder: (context, cartRepository, child) {
+                        return IconButton(
+                          onPressed: () {
+                            navigatorKey.currentState?.push(
+                              MaterialPageRoute(
+                                builder: (context) => const CartView(),
                               ),
-                              constraints: const BoxConstraints(
-                                minWidth: 15,
-                                minHeight: 15,
-                              ),
-                              child: Text(
-                                cartRepository.count.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+                            );
+                          },
+                          icon: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              const Icon(Icons.shopping_cart_sharp, size: 28),
+                              if (cartRepository.count > 0)
+                                Positioned(
+                                  right: -10,
+                                  top: -8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromRGBO(250, 181, 228, 0.85),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 15,
+                                      minHeight: 15,
+                                    ),
+                                    child: Text(
+                                      cartRepository.count.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                            ],
                           ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
               if (grosseWerkeList.isNotEmpty) ...[
                 const Padding(

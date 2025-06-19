@@ -95,57 +95,62 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                         }).toList(),
                   ),
                 ),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    _selectedVariant?.availableForSale == true
-                        ? Colors.black
-                        : Colors.grey,
-                  ),
-                ),
-                onPressed:
-                    _selectedVariant?.availableForSale != true
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton.icon(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        _selectedVariant?.availableForSale == true
+                            ? Colors.black
+                            : Colors.grey,
+                      ),
+                    ),
+                    onPressed: _selectedVariant?.availableForSale != true
                         ? null
                         : () async {
-                        
-                          await _checkoutService.launchCheckoutForSingleVariant(_selectedVariant!);
-                        },
-                child: const Text(
-                  style: TextStyle(color: Colors.white),
-                  'Sofort kaufen',
-                ),
-              ),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    _selectedVariant?.availableForSale == true && _cartRepository.canAdd(_selectedVariant!)
-                        ? Colors.black
-                        : Colors.grey,
+                            await _checkoutService.launchCheckoutForSingleVariant(_selectedVariant!);
+                          },
+                    icon: const Icon(Icons.shopping_bag, color: Colors.white),
+                    label: const Text(
+                      'Sofort kaufen',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-                onPressed:
-                    _selectedVariant?.availableForSale != true || !_cartRepository.canAdd(_selectedVariant!)
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        _selectedVariant?.availableForSale == true && _cartRepository.canAdd(_selectedVariant!)
+                            ? Colors.black
+                            : Colors.grey,
+                      ),
+                    ),
+                    onPressed: _selectedVariant?.availableForSale != true || !_cartRepository.canAdd(_selectedVariant!)
                         ? null
                         : () async {
-                          final addResult = await _cartRepository.addToCart(_selectedVariant!);
-                          if (addResult.success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Produkt zum Warenkorb hinzugefügt!'),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Fehler beim Hinzufügen zum Warenkorb: ${addResult.message}'),
-                              ),
-                            );
-                          }
-                        },
-                child: const Text(
-                  style: TextStyle(color: Colors.white),
-                  'Zum Warenkorb hinzufügen',
-                ),
+                            final addResult = await _cartRepository.addToCart(_selectedVariant!);
+                            if (addResult.success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Produkt zum Warenkorb hinzugefügt!'),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Fehler beim Hinzufügen zum Warenkorb: ${addResult.message}'),
+                                ),
+                              );
+                            }
+                          },
+                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    label: const Text(
+                      'Zum Warenkorb hinzufügen',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Text(

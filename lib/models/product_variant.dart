@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:michelle_frerk/models/product.dart';
 
 class ProductVariant {
@@ -21,4 +20,12 @@ class ProductVariant {
     this.quantityAvailable,
     this.product,
   );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProductVariant && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

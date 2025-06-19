@@ -43,7 +43,22 @@ class _CartViewState extends State<CartView> {
                       return ListTile(
                         title: Text(title),
                         subtitle: Text('Menge: $quantity'),
-                        trailing: Text(formatPrice(variant.price)),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(formatPrice(variant.price)),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.black),
+                              tooltip: 'Entfernen',
+                              onPressed: () async {
+                                setState(() {
+                                  cartRepository.remove(variant);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),

@@ -79,4 +79,13 @@ class CartRepository extends ChangeNotifier {
         .join(outerSplitSymbol);
     await prefs.setString('cart', cartData);
   }
+
+  void remove(ProductVariant variant) {
+    if (!cart.variantsWithQuantities.containsKey(variant)) {
+      return;
+    }
+    cart.variantsWithQuantities.remove(variant);
+    _persistCart();
+    notifyListeners();
+  }
 }

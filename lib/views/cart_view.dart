@@ -25,17 +25,19 @@ class _CartViewState extends State<CartView> {
       ),
       body: entries.isEmpty
           ? const Center(child: Text('Dein Warenkorb ist leer.'))
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: entries.length,
                     itemBuilder: (context, index) {
                       final entry = entries[index];
                       final variant = entry.key;
                       final quantity = entry.value;
                       var title = variant.product.title;
-                      if(variant.title.isNotEmpty) {
+                      if (variant.title.isNotEmpty) {
                         title += ' - ${variant.title}';
                       }
                       return ListTile(
@@ -45,38 +47,58 @@ class _CartViewState extends State<CartView> {
                       );
                     },
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await cartRepository.clearCart();
-                    setState(() {});
-                  },
-                  child: const Text('Warenkorb leeren'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await cartRepository.launchCheckout();
-                  },
-                  child: const Text('Zur Kasse'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Gesamt: ',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        formatPrice(totalPrice),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Gesamt: ',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          formatPrice(totalPrice),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () async {
+                            await cartRepository.launchCheckout();
+                          },
+                          icon: const Icon(Icons.shopping_bag),
+                          label: const Text('Zur Kasse'),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () async {
+                            await cartRepository.clearCart();
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.delete),
+                          label: const Text('Warenkorb leeren'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
     );
   }

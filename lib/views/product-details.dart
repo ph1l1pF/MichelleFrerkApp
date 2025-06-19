@@ -7,6 +7,7 @@ import 'package:michelle_frerk/views/carousel.dart';
 import 'package:michelle_frerk/models/product.dart';
 import 'package:michelle_frerk/models/product_variant.dart';
 import 'package:provider/provider.dart';
+import 'cart_view.dart';
 
 class ProduktDetailPage extends StatefulWidget {
   final Product product;
@@ -132,8 +133,18 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                             final addResult = await _cartRepository.addToCart(_selectedVariant!);
                             if (addResult.success) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Produkt zum Warenkorb hinzugefügt!'),
+                                SnackBar(
+                                  content: const Text('Produkt zum Warenkorb hinzugefügt!'),
+                                  action: SnackBarAction(
+                                    label: 'Warenkorb anzeigen',
+                                    textColor: Colors.white,
+                                    onPressed: () {
+                                      // Hier kannst du z.B. zur CartView navigieren:
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) => const CartView()),
+                                      );
+                                    },
+                                  ),
                                 ),
                               );
                             } else {

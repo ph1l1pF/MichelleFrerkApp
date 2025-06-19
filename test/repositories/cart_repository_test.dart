@@ -1,15 +1,13 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:michelle_frerk/models/product.dart';
 import 'package:michelle_frerk/models/product_variant.dart';
 import 'package:michelle_frerk/models/collection.dart';
 import 'package:michelle_frerk/repositories/cart_repository.dart';
-import 'package:michelle_frerk/services/checkout_service.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../mocks.mocks.dart';
 
-// Mock-Klasse für CheckoutService
-class MockCheckoutService extends Mock implements CheckoutService {}
+
 
 void main() {
   group('CartRepository', () {
@@ -30,24 +28,8 @@ void main() {
       cartRepositoryCopy = CartRepository(checkoutService: mockCheckoutService);
 
       collection = Collection('c1', 'Test Collection');
-      productA = Product(
-        'p1',
-        'Produkt A',
-        'desc',
-        true,
-        collection,
-        '',
-        [],
-      );
-      productB = Product(
-        'p2',
-        'Produkt B',
-        'desc',
-        true,
-        collection,
-        '',
-        [],
-      );
+      productA = Product('p1', 'Produkt A', 'desc', true, collection, '', []);
+      productB = Product('p2', 'Produkt B', 'desc', true, collection, '', []);
       variantA = ProductVariant(
         'v1',
         'Variante A',
@@ -77,14 +59,14 @@ void main() {
       expect(result.success, true);
       expect(cartRepository.totalPrice, 10.0);
       expect(cartRepository.count, 1);
-    }, skip: true);
+    });
 
     test('addToCart erhöht Menge', () async {
       await cartRepository.addToCart(variantA);
       await cartRepository.addToCart(variantA);
       expect(cartRepository.count, 2);
       expect(cartRepository.totalPrice, 20.0);
-    }, skip: true);
+    });
 
     test('clearCart leert den Warenkorb', () async {
       await cartRepository.addToCart(variantA);
@@ -92,18 +74,21 @@ void main() {
       await cartRepository.clearCart();
       expect(cartRepository.totalPrice, 0.0);
       expect(cartRepository.count, 0);
-    }, skip: true);
-
+    });
 
     test('launchCheckout ruft CheckoutService auf', () async {
       await cartRepository.addToCart(variantA);
       await cartRepository.launchCheckout();
-      verify(mockCheckoutService.launchCheckout(cartRepository.cart.variantsWithQuantities)).called(1);
-    }, skip: true);
+      verify(
+        mockCheckoutService.launchCheckout(
+          cartRepository.cart.variantsWithQuantities,
+        ),
+      ).called(1);
+    });
 
     test('launchCheckout wirft Exception bei leerem Warenkorb', () async {
       expect(() => cartRepository.launchCheckout(), throwsException);
-    }, skip: true);
+    });
 
     test('cannot add more than available', () async {
       for (int i = 0; i < 2; i++) {
@@ -111,7 +96,7 @@ void main() {
       }
       final result = await cartRepository.addToCart(variantB);
       expect(result.success, false);
-    }, skip: true);
+    });
 
     test('loadCart lädt Varianten aus gespeicherten Daten', () async {
       // Simuliere gespeicherten Warenkorb
@@ -119,11 +104,11 @@ void main() {
       await cartRepository.addToCart(variantB);
 
       // Lade den Warenkorb neu
-      
+
       await cartRepositoryCopy.loadCart([productA, productB]);
       expect(cartRepositoryCopy.count, 2);
       expect(cartRepositoryCopy.cart.variantsWithQuantities[variantA], 1);
       expect(cartRepositoryCopy.cart.variantsWithQuantities[variantB], 1);
-    }, skip: true);
+    });
   });
 }

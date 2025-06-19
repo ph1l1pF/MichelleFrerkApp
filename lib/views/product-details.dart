@@ -125,9 +125,8 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                 ),
                 onPressed:
                     _selectedVariant?.availableForSale != true || !_cartRepository.canAdd(_selectedVariant!)
-                        ? () {print('bla');}
+                        ? null
                         : () async {
-                      
                           final addResult = await _cartRepository.addToCart(_selectedVariant!);
                           if (addResult.success) {
                             ScaffoldMessenger.of(context).showSnackBar(

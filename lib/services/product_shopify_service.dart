@@ -79,7 +79,7 @@ class ProductShopifyService {
       final variantNode = v['node'];
       return ProductVariant(
         variantNode['id'],
-        variantNode['title'],
+        variantNode['title'] != 'Default Title' ? variantNode['title'] : '',
         variantNode['availableForSale'],
         double.parse(variantNode['price']['amount']),
         variantNode['price']['currencyCode'],

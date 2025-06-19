@@ -34,8 +34,12 @@ class _CartViewState extends State<CartView> {
                       final entry = entries[index];
                       final variant = entry.key;
                       final quantity = entry.value;
+                      var title = variant.product.title;
+                      if(variant.title.isNotEmpty) {
+                        title += ' - ${variant.title}';
+                      }
                       return ListTile(
-                        title: Text('${variant.product.title} - ${variant.title}'),
+                        title: Text(title),
                         subtitle: Text('Menge: $quantity'),
                         trailing: Text(formatPrice(variant.price)),
                       );

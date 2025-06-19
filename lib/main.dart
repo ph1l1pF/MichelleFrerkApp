@@ -171,12 +171,17 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  bool loaded = false;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final cartRepository = Provider.of<CartRepository>(context, listen: true);
     _productsFuture.then((products) async {
+      if (loaded) {
+        return;
+      }
       await cartRepository.loadCart(products);
+      loaded = true;
     });
   }
 

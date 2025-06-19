@@ -1,25 +1,27 @@
-name: Flutter Tests
+name: Flutter Unit Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
+    name: Run Flutter Tests
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.8.x'
+          flutter-version: '3.22.1' # oder passend zu deinem Projekt
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests
+      - name: Run unit tests
         run: flutter test

@@ -21,8 +21,8 @@ class _VideoSlideState extends State<VideoSlide> {
   @override
   void initState() {
     super.initState();
-    _downloadAndPlayVideo();
     _mediaItemRepository = Provider.of<MediaItemRepository>(context, listen: false);
+    _downloadAndPlayVideo();
     
   }
 

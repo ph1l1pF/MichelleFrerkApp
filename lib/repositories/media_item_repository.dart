@@ -8,9 +8,13 @@ import 'package:path_provider/path_provider.dart';
 class MediaItemRepository {
   final Map<String, File> _cache = {};
 
+  final http.Client client;
+
+  MediaItemRepository({http.Client? client}) : client = client ?? http.Client();
+
   Future<void> loadAll(List<MediaItem> mediaItems) async {
     for (var mediaItem in mediaItems) {
-      _load(mediaItem);
+      await _load(mediaItem);
     }
   }
 
@@ -47,7 +51,7 @@ class MediaItemRepository {
     final tempDir = await getTemporaryDirectory();
     final filePath = '${tempDir.path}/$fileName';
 
-    final response = await http.get(Uri.parse(mediaItem.locator));
+    final response = await client.get(Uri.parse(mediaItem.locator));
     if (response.statusCode != 200) {
       print('Failed to download video: ${response.statusCode}');
       return null;

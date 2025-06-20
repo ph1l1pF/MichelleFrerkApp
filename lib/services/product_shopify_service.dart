@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:michelle_frerk/repositories/collections-map.dart';
+import 'package:michelle_frerk/repositories/collections_map.dart';
 import 'package:michelle_frerk/environment.dart';
 import 'package:michelle_frerk/models/collection.dart';
 import 'package:michelle_frerk/models/media_item.dart';

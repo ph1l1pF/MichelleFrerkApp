@@ -101,13 +101,14 @@ void main() {
     test('loadCart lädt Varianten aus gespeicherten Daten', () async {
       // Simuliere gespeicherten Warenkorb
       await cartRepository.addToCart(variantA);
+      await cartRepository.addToCart(variantA);
       await cartRepository.addToCart(variantB);
 
       // Lade den Warenkorb neu
 
       await cartRepositoryCopy.loadCart([productA, productB]);
-      expect(cartRepositoryCopy.count, 2);
-      expect(cartRepositoryCopy.cart.variantsWithQuantities[variantA], 1);
+      expect(cartRepositoryCopy.count, 3);
+      expect(cartRepositoryCopy.cart.variantsWithQuantities[variantA], 2);
       expect(cartRepositoryCopy.cart.variantsWithQuantities[variantB], 1);
     });
   });

@@ -6,7 +6,7 @@ import 'package:michelle_frerk/repositories/media_item_repository.dart';
 import 'package:michelle_frerk/services/checkout_service.dart';
 import 'package:michelle_frerk/services/firestore_service.dart';
 import 'package:michelle_frerk/views/carousel.dart';
-import 'package:michelle_frerk/repositories/collections-map.dart';
+import 'package:michelle_frerk/repositories/collections_map.dart';
 import 'package:michelle_frerk/environment.dart';
 import 'package:michelle_frerk/models/product.dart';
 import 'package:michelle_frerk/services/product_shopify_service.dart';

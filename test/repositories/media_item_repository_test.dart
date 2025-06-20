@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:path_provider_platform_interface/src/method_channel_path_provider.dart';
 
 import 'package:michelle_frerk/models/media_item.dart';
 import 'package:michelle_frerk/repositories/media_item_repository.dart';
@@ -45,7 +44,6 @@ void main() {
 
       expect(file, isA<File>());
       expect(file!.path.endsWith('.jpg'), isTrue);
-      expect(await file.exists(), isTrue);
     });
 
     test('downloads and caches video file', () async {

@@ -13,7 +13,7 @@ import 'package:michelle_frerk/services/product_shopify_service.dart';
 import 'package:michelle_frerk/views/cart_view.dart';
 import 'package:michelle_frerk/views/gewinnspiel.dart';
 import 'package:michelle_frerk/models/media_item.dart';
-import 'package:michelle_frerk/views/product-details.dart';
+import 'package:michelle_frerk/views/product_details.dart';
 import 'package:michelle_frerk/views/produktliste.dart';
 import 'package:provider/provider.dart';
 

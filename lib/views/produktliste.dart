@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:michelle_frerk/models/product.dart';
-import 'package:michelle_frerk/views/product-details.dart';
+import 'package:michelle_frerk/views/product_details.dart';
 
 class ProduktListe extends StatefulWidget {
   final List<Product> produkte;

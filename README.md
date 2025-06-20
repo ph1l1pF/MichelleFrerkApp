@@ -2,9 +2,23 @@
 
 An App for the artist Michelle Frerk, which shows her artworks and allows to buy them.
 
-It uses the Shopify Storefront API to fetch the products and the checkout process.
-
 https://michellefrerk.com
+
+The app uses...
+
+- Shopify Storefront API to fetch the products and for the checkout process.
+- Firebase Cloud Messaging to send push notifications to the users.
+- Fire store to store user data for the 'Gewinnspiel' feature.
+
+## Architecture
+
+The code consists of...
+
+- models containing data and domain logic (not much present in this small app)
+- repositories for caching and state handling
+- services for the communication with external APIs
+- views/widgets for the UI
+
 
 ## Increase version number
 
@@ -18,23 +32,8 @@ flutter pub get
 flutter build ios
 ```
 
-
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
 # Firebase Cloud Messaging
 
-when an Authentication Key is created in apple developer page, it is important that the environment is Sandbox & Production otherwise, push notifications won't be delivered in prod mode (testflight or appstore distribution)
+when an Authentication Key is created in apple developer page, it is important that the environment is Sandbox & Production otherwise, push notifications won't be delivered in production build (testflight or appstore distribution)
 
 [Firebase Cloud Messaging](docs/authkey.png)

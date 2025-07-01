@@ -3,11 +3,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:michelle_frerk/repositories/cart_repository.dart';
 import 'package:michelle_frerk/repositories/media_item_repository.dart';
+import 'package:michelle_frerk/repositories/notification_repository.dart';
 import 'package:michelle_frerk/services/checkout_service.dart';
 import 'package:michelle_frerk/services/firestore_service.dart';
 import 'package:michelle_frerk/views/carousel.dart';
 import 'package:michelle_frerk/repositories/collections_map.dart';
-import 'package:michelle_frerk/environment.dart';
 import 'package:michelle_frerk/models/product.dart';
 import 'package:michelle_frerk/services/product_shopify_service.dart';
 import 'package:michelle_frerk/views/cart_view.dart';
@@ -21,19 +21,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  await messaging.requestPermission(alert: true, badge: true, sound: true);
-  await FirebaseMessaging.instance.getAPNSToken();
-  var topic = await Environment.firebaseMessagingTopic();
-  FirebaseMessaging.instance.subscribeToTopic(topic);
+  final firestoreService = FirestoreService();
+  final notificationRepository = NotificationRepository(firestoreService: firestoreService);
+  if(await notificationRepository.notificationsEnabled) {
+    await notificationRepository.subscribeToTopic();
+  }
 
   runApp(
     MultiProvider(
       providers: [
         Provider(create: (context) => MediaItemRepository()),
-        Provider(create: (context) => FirestoreService()),
+        Provider(create: (context) => firestoreService),
         Provider(create: (context) => ProductShopifyService()),
         Provider(create: (context) => CheckoutService()),
+        Provider(create: (context) => notificationRepository),
         ChangeNotifierProvider(create: (context) => CartRepository(checkoutService: CheckoutService())), // How to use the CartShopifyService
       ],
       child: const MyApp(),

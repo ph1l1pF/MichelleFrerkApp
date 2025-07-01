@@ -31,19 +31,20 @@ class CartRepository extends ChangeNotifier {
     final entries = cartData.split(outerSplitSymbol);
     for (var entry in entries) {
       final parts = entry.split(innerSplitSymbol);
-      if (parts.length == 2) {
-        final variantId = parts[0];
-        final quantity = int.tryParse(parts[1]) ?? 0;
-        final variant = products
-            .expand((product) => product.variants)
-            .where(
-              (v) => v.id == variantId
-            ).firstOrNull;
-        
-        if (variant != null && quantity > 0) {
-          cart.add(variant, quantity);
-        }
+      if (parts.length != 2) {
+        continue; // this should not happen, but just in case
       }
+      final variantId = parts[0];
+      final quantity = int.tryParse(parts[1]) ?? 0;
+      final variant = products
+          .expand((product) => product.variants)
+          .where(
+            (v) => v.id == variantId
+          ).firstOrNull;
+      
+      if (variant != null && quantity > 0) {
+        cart.add(variant, quantity);
+      }   
     }
   }
 
@@ -81,10 +82,10 @@ class CartRepository extends ChangeNotifier {
   }
 
   void remove(ProductVariant variant) {
-    if (!cart.variantsWithQuantities.containsKey(variant)) {
+    var deleted = cart.remove(variant);
+    if (!deleted) {
       return;
     }
-    cart.variantsWithQuantities.remove(variant);
     _persistCart();
     notifyListeners();
   }

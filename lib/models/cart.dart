@@ -2,10 +2,12 @@
 import 'package:michelle_frerk/models/product_variant.dart';
 
 class Cart {
-  final Map<ProductVariant, int> variantsWithQuantities = {};
+  final Map<ProductVariant, int> _variantsWithQuantities = {};
+
+  get variantsWithQuantities => _variantsWithQuantities;
 
   bool canAdd(ProductVariant variant, int quantity) {
-    final currentQuantity = variantsWithQuantities[variant] ?? 0;
+    final currentQuantity = _variantsWithQuantities[variant] ?? 0;
     if (quantity + currentQuantity > variant.quantityAvailable) {
       return false;
     }
@@ -14,18 +16,18 @@ class Cart {
 
   double get totalPrice {
     double total = 0.0;
-    variantsWithQuantities.forEach((variant, quantity) {
+    _variantsWithQuantities.forEach((variant, quantity) {
       total += variant.price * quantity;
     });
     return total;
   }
 
-  int get count => variantsWithQuantities.isNotEmpty
-      ? variantsWithQuantities.values.reduce((a, b) => a + b)
+  int get count => _variantsWithQuantities.isNotEmpty
+      ? _variantsWithQuantities.values.reduce((a, b) => a + b)
       : 0;
 
   void clear() {
-    variantsWithQuantities.clear();
+    _variantsWithQuantities.clear();
   }
 
   CartAddResult add(ProductVariant variant, int quantity) {
@@ -37,15 +39,23 @@ class Cart {
       );
     }
 
-    if (variantsWithQuantities.containsKey(variant)) {
-      variantsWithQuantities[variant] = variantsWithQuantities[variant]! + quantity;
+    if (_variantsWithQuantities.containsKey(variant)) {
+      _variantsWithQuantities[variant] = _variantsWithQuantities[variant]! + quantity;
     } else {
-      variantsWithQuantities[variant] = quantity;
+      _variantsWithQuantities[variant] = quantity;
     }
     return CartAddResult(
       true,
       '',
     );
+  }
+
+  bool remove(ProductVariant variant) {
+    if (!_variantsWithQuantities.containsKey(variant)) {
+      return false;
+    }
+    _variantsWithQuantities.remove(variant);
+    return true;
   }
 }
 

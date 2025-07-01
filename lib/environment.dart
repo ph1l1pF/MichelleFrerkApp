@@ -12,11 +12,19 @@ class Environment {
     }
   }
 
-  static Future<String> firebaseStoreCollection() async{
+  static Future<String> firebaseStoreCollectionGewinnspiel() async{
     if (await _isProdMode()) {
       return "Gewinnspiel";
     } else {
       return "Gewinnspiel_test";
+    }
+  }
+
+  static Future<String> firebaseStoreCollectionNotificationsEnabled() async{
+    if (await _isProdMode()) {
+      return "Notifications";
+    } else {
+      return "Notifications_test";
     }
   }
 

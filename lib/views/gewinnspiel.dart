@@ -1,5 +1,5 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:michelle_frerk/repositories/notification_repository.dart';
 import 'package:michelle_frerk/services/firestore_service.dart';
 import 'package:michelle_frerk/views/media_viewer.dart';
 import 'package:michelle_frerk/models/media_item.dart';
@@ -23,14 +23,24 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
 
   final prefKey = 'hasParticipated17655478753';
   late FirestoreService _firestoreService;
+  late NotificationRepository _notificationRepository;
 
   @override
   void initState() {
     super.initState();
-    _checkParticipation();
-    _checkNotificationPermissions();
     _firestoreService = Provider.of<FirestoreService>(context, listen: false);
+    _notificationRepository = Provider.of<NotificationRepository>(
+      context,
+      listen: false,
+    );
+  }
 
+  @override
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    await _checkParticipation();
+    await _checkNotificationPermissions();
   }
 
   Future<void> _checkParticipation() async {
@@ -41,10 +51,9 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
   }
 
   Future<void> _checkNotificationPermissions() async {
-    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    final notificationsEnabled = await _notificationRepository.notificationsEnabled;
     setState(() {
-      _notificationsEnabled =
-          settings.authorizationStatus == AuthorizationStatus.authorized;
+      _notificationsEnabled = notificationsEnabled;
     });
   }
 
@@ -53,7 +62,7 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
     await prefs.setBool(prefKey, true);
 
     try {
-      await _firestoreService.store(
+      await _firestoreService.storeGewinnspielTeilnehmer(
         _nameController.value.text.trim(),
         _emailController.value.text.trim(),
       );
@@ -64,19 +73,18 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
 
       showDialog(
         context: context,
-        builder:
-            (context) => AlertDialog(
-              title: const Text('Vielen Dank!'),
-              content: const Text(
-                'Du hast erfolgreich am Gewinnspiel teilgenommen. Viel Glück!',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
+        builder: (context) => AlertDialog(
+          title: const Text('Vielen Dank!'),
+          content: const Text(
+            'Du hast erfolgreich am Gewinnspiel teilgenommen. Viel Glück!',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
             ),
+          ],
+        ),
       );
     } catch (e) {
       await prefs.setBool(prefKey, false);
@@ -99,7 +107,8 @@ class _GewinnspielPageState extends State<GewinnspielPage> {
   @override
   Widget build(BuildContext context) {
     var endDate = GewinnspielPage.endDate.toLocal();
-    var endDateString = "${endDate.day.toString().padLeft(2, '0')}.${endDate.month.toString().padLeft(2, '0')}.${endDate.year}";
+    var endDateString =
+        "${endDate.day.toString().padLeft(2, '0')}.${endDate.month.toString().padLeft(2, '0')}.${endDate.year}";
     var bedingungen = '''1. Veranstalter:
 
 Das Gewinnspiel wird veranstaltet von Michelle Frerk, Aretousas 7c, 6036 Larnaca, Zypern. 
@@ -113,11 +122,12 @@ An dem Gewinnspiel können alle natürlichen Personen teilnehmen, die ihren Wohn
 Das Gewinnspiel beginnt am 07.06.2025 und endet am 15.07.2025. 
 
 4. Teilnahmebedingungen:
-Die Teilnahme am Gewinnspiel ist kostenlos und erfolgt ausschließlich online über die App. Um an dem Gewinnspiel teilzunehmen, müssen die Teilnehmenden ihren Namen und ihre E-Mail-Adresse in die dafür vorgesehenen Felder eintragen und auf "Teilnehmen" klicken. 
+
+Die Teilnahme am Gewinnspiel ist kostenlos und erfolgt ausschließlich online über die App. Um an dem Gewinnspiel teilzunehmen, müssen die Teilnehmer ihren Namen und ihre E-Mail-Adresse in die dafür vorgesehenen Felder eintragen und auf "Teilnehmen" klicken. Eine weitere Voraussetzung für die Teilnahme ist, dass die Push-Benachrichtigungen in den Einstellungen der App aktiviert sind.
 
 5. Gewinnerermittlung:
 
-Die Gewinner werden unter allen teilnahmeberechtigten Teilnehmern per Zufallsziehung ermittelt. 
+Der Gewinner wird unter allen teilnahmeberechtigten Teilnehmern per Zufallsziehung ermittelt. 
 
 6. Gewinnanspruch:
 
@@ -137,21 +147,26 @@ Der Veranstalter behält sich das Recht vor, das Gewinnspiel jederzeit ohne Anga
 Die Firma Apple Inc. steht in keiner Verbindung zu diesem Gewinnspiel und ist nicht verantwortlich für die Durchführung oder Abwicklung des Gewinnspiels.''';
     return Scaffold(
       appBar: AppBar(),
-      body: SingleChildScrollView( 
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: _hasParticipated
               ? Column(
-                  children: [Text(
-                    'Du hast bereits am Gewinnspiel teilgenommen. Viel Glück! Der Gewinner wird am $endDateString bekannt gegeben und von mir per E-Mail benachrichtigt.',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 26),
-                  Text(bedingungen,
-                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                  children: [
+                    Text(
+                      'Du hast bereits am Gewinnspiel teilgenommen. Viel Glück! Der Gewinner wird am $endDateString bekannt gegeben und von mir per E-Mail benachrichtigt.',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                  ]
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 26),
+                    Text(
+                      bedingungen,
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                    ),
+                  ],
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,25 +217,74 @@ Die Firma Apple Inc. steht in keiner Verbindung zu diesem Gewinnspiel und ist ni
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_nameController.text.trim().isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Bitte gib einen Namen ein.'),
                             ),
                           );
-                        } else if (_emailController.text.trim().isEmpty || !_isValidEmail(_emailController.text)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Bitte gib eine gültige E-Mail-Adresse ein.'),
-                            ),
-                          );
-                        } else if (!_notificationsEnabled) {
+                        } else if (_emailController.text.trim().isEmpty ||
+                            !_isValidEmail(_emailController.text)) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                'Bitte aktiviere die Push-Benachrichtigungen in den Einstellungen, um am Gewinnspiel teilzunehmen.',
+                                'Bitte gib eine gültige E-Mail-Adresse ein.',
                               ),
+                            ),
+                          );
+                        } else if (!_notificationsEnabled) {
+                          final notificationsAlreadyDenied =
+                              await _notificationRepository.alreadyDenied;
+                          await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text(
+                                'Push-Benachrichtigungen aktivieren',
+                              ),
+                              content: const Text(
+                                'Möchtest du am Gewinnspiel teilnehmen und keine meiner neuen Kunstwerke mehr verpassen? Dann aktiviere jetzt die Push-Benachrichtigungen.',
+                              ),
+                              actions: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    Navigator.of(context).pop();
+                                    if (notificationsAlreadyDenied) {
+                                      _notificationRepository
+                                          .openAppNotificationSettings();
+                                      return;
+                                    }
+                                    await _notificationRepository
+                                        .requestNotificationPermissions();
+
+                                    _notificationsEnabled =
+                                        await _notificationRepository
+                                            .notificationsEnabled;
+                                    if (_notificationsEnabled) {
+                                      _submitEmail();
+                                      return;
+                                    }
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Bitte aktiviere die Push-Benachrichtigungen in den Einstellungen, um am Gewinnspiel teilzunehmen.',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    notificationsAlreadyDenied
+                                        ? 'App-Einstellungen öffnen'
+                                        : 'Benachrichtigungen aktivieren und am Gewinnspiel teilnehmen',
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text(
+                                    'Gewinnspiel & neue Werke verpassen',
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         } else {
@@ -230,11 +294,14 @@ Die Firma Apple Inc. steht in keiner Verbindung zu diesem Gewinnspiel und ist ni
                       child: const Text('Teilnehmen'),
                     ),
                     const SizedBox(height: 16),
-                    Text('Durch Klick auf "Teilnehmen" akzeptierst du die Teilnahmebedingungen und Datenschutzbestimmungen.'),
+                    Text(
+                      'Durch Klick auf "Teilnehmen" akzeptierst du die Teilnahmebedingungen und Datenschutzbestimmungen.',
+                    ),
                     const SizedBox(height: 25),
-                    Text(bedingungen,
-                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                      ),
+                    Text(
+                      bedingungen,
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                    ),
                   ],
                 ),
         ),

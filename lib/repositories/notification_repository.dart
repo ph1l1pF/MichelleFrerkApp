@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationRepository {
   bool? _alreadyDenied;
+  bool? _hintAlreadShown;
   
   final FirestoreService firestoreService;
 
@@ -20,6 +21,20 @@ class NotificationRepository {
     return _alreadyDenied;
   }
 
+  get hintAlreadyShown async {
+    if(_hintAlreadShown == null) {
+      final prefs = await SharedPreferences.getInstance();
+      _hintAlreadShown = prefs.getBool('notifications_hint_already_shown') ?? false;
+    }
+    return _hintAlreadShown;
+  }
+
+  setHintAlreadyShown() async {
+    _hintAlreadShown = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_hint_already_shown', true);
+  }
+
   get notificationsEnabled async {
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized;
@@ -31,9 +46,12 @@ class NotificationRepository {
     final enabled = await notificationsEnabled;
     if(enabled) {
       await subscribeToTopic();
+      await firestoreService.storeNotificationsEnabled();
     }
     if (!enabled) {
       _alreadyDenied = true;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notifications_already_denied', true);
     }
   }
 
@@ -46,4 +64,5 @@ class NotificationRepository {
   void openAppNotificationSettings() {
     AppSettings.openAppSettings();
   }
+
 }

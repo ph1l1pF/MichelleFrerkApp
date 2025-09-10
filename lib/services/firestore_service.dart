@@ -7,7 +7,7 @@ class FirestoreService {
 Future<void> storeNotificationsEnabled() async {
     final firestore = FirebaseFirestore.instance;
 
-    String collection = await Environment.firebaseStoreCollectionGewinnspiel();
+    String collection = await Environment.firebaseStoreCollectionNotificationsEnabled();
 
     await firestore.collection(collection).add({
       'timestamp': FieldValue.serverTimestamp(),

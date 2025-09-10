@@ -36,9 +36,10 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
                               await _notificationRepository.alreadyDenied;
     final notificationsEnabled =
                               await _notificationRepository.notificationsEnabled;
+     final hinAlreadyShown = await _notificationRepository.hintAlreadyShown;
     setState(() {
       _shouldShowNotificationHint = !notificationsAlreadyDenied &&
-        !notificationsEnabled;
+        !notificationsEnabled && !hinAlreadyShown;
     });
   }
 
@@ -71,6 +72,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Keine neuen Kunstwerke mehr verpassen?'),
+              duration: const Duration(seconds: 30),
               action: SnackBarAction(
                 label: 'Benachrichtigungen aktivieren',
                 textColor: Colors.white,
@@ -80,6 +82,7 @@ class _ProduktDetailPageState extends State<ProduktDetailPage> {
               ),
             ),
           );
+          _notificationRepository.setHintAlreadyShown();
         }
       });
     }

@@ -8,8 +8,8 @@ final String ArtInteriorPieces = 'Art Interior Pieces';
 
 final Map<String, String> collectionMap = {
   Startseite: 'gid://shopify/Collection/625186734409',
-  MINI: 'gid://shopify/Collection/653555269961',
-  grosseWerke: 'gid://shopify/Collection/653555564873',
+  MINI: 'gid://shopify/Collection/673602404681',
+  grosseWerke: 'gid://shopify/Collection/673602273609',
   Gutscheine: 'gid://shopify/Collection/653556842825',
   Journals: 'gid://shopify/Collection/655361671497',
   Auftragarbeiten: 'gid://shopify/Collection/661302804809',

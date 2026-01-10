@@ -11,7 +11,6 @@ import 'package:michelle_frerk/repositories/collections_map.dart';
 import 'package:michelle_frerk/models/product.dart';
 import 'package:michelle_frerk/services/product_shopify_service.dart';
 import 'package:michelle_frerk/views/cart_view.dart';
-import 'package:michelle_frerk/views/gewinnspiel.dart';
 import 'package:michelle_frerk/models/media_item.dart';
 import 'package:michelle_frerk/views/product_details.dart';
 import 'package:michelle_frerk/views/produktliste.dart';
@@ -94,7 +93,6 @@ class _MyAppState extends State<MyApp> {
   List<Product> minisList = [];
   List<Product> journalsList = [];
   List<Product> auftragarbeitenList = [];
-  List<Product> gutscheineList = [];
   List<Product> artInteriorPiecesList = [];
 
   @override
@@ -132,13 +130,6 @@ class _MyAppState extends State<MyApp> {
                 .where(
                   (produkt) =>
                       produkt.collection.id == collectionMap[Auftragarbeiten],
-                )
-                .toList();
-        gutscheineList =
-            products
-                .where(
-                  (produkt) =>
-                      produkt.collection.id == collectionMap[Gutscheine],
                 )
                 .toList();
         artInteriorPiecesList =
@@ -278,21 +269,11 @@ class _MyAppState extends State<MyApp> {
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    'Journals',
+                    'Journals & Geschenkideen',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 ProduktListe(produkte: journalsList),
-              ],
-              if (gutscheineList.isNotEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'Gutscheine',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ProduktListe(produkte: gutscheineList),
               ],
               if (artInteriorPiecesList.isNotEmpty) ...[
                 const Padding(
@@ -377,7 +358,7 @@ Folge mir auch gerne auf Instagram (@michellefrerk). Dort findest du Einblicke i
                 ? _buildProductsPage()
                 : _selectedIndex == 1
                 ? _buildAboutMePage()
-                : const GewinnspielPage(),
+                : null,
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           backgroundColor: Color.fromRGBO(250, 181, 228, 0.85),
@@ -420,20 +401,7 @@ Folge mir auch gerne auf Instagram (@michellefrerk). Dort findest du Einblicke i
         ),
         label: 'About Me',
       ),
-      BottomNavigationBarItem(
-        icon: Icon(
-          Icons.card_giftcard,
-          color:
-              _selectedIndex == 2
-                  ? Colors.white
-                  : Color.fromRGBO(255, 255, 255, 0.6),
-        ),
-        label: 'Gewinnspiel',
-      ),
     ];
-    if (GewinnspielPage.endDate.isBefore(DateTime.now())) {
-      items.removeAt(2);
-    }
     return items;
   }
 }
